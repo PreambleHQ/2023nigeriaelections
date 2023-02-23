@@ -3,7 +3,7 @@ let height = document.getElementById("chart").getBoundingClientRect().height;
 // draw a map of nigeria using d3
 Promise.all([
   d3.json(
-    "data/nigeria-states.json"
+    "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/nigeria-states.json"
   ),
   d3.csv(
     "data/election.csv"
@@ -37,8 +37,7 @@ function drawMap(states, election, candidates, width, height) {
         d[key] = +d[key];
       }
     });
-  })
-
+  });
 
   // create a state map using d3
   const svg = d3
