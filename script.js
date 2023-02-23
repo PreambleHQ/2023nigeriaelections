@@ -5,11 +5,9 @@ Promise.all([
   d3.json(
     "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/nigeria-states.json"
   ),
+  d3.csv("data/election.csv"),
   d3.csv(
-    "data/election.csv"
-  ),
-  d3.csv(
-    "data/candidates.csv"
+    "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/candidates.csv"
   ),
 ]).then((data) => {
   const [states, election, candidates] = data;
@@ -28,6 +26,74 @@ Promise.all([
     }, 500);
   });
 });
+
+const PDPColourScale = d3
+  .scaleOrdinal()
+  .domain([40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+  .range([
+    "#A3FFA6",
+    "#70FF74",
+    "#4FFF42",
+    "#4FFF0C",
+    "#41D605",
+    "#2FA302",
+    "#258602",
+    "#1B6902",
+    "#135202",
+    "#0A3802",
+    "#042002",
+  ]);
+
+const APCColourScale = d3
+  .scaleLinear()
+  .domain([40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+  .range([
+    "#B4D6F3",
+    "#87BEEB",
+    "#5FAAE2",
+    "#3290DD",
+    "#246CB0",
+    "#1C5A90",
+    "#164979",
+    "#113F64",
+    "#0D314F",
+    "#092539",
+    "#041525",
+  ]);
+
+const NNPPColourScale = d3
+  .scaleLinear()
+  .domain([40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+  .range([
+    "#faf8ed",
+    "#ede9d3",
+    "#ebe3be",
+    "#f0e6b4",
+    "#f2e5a2",
+    "#f5e389",
+    "#f0db73",
+    "#f2da5e",
+    "#f0d23e",
+    "#f2d129",
+    "#f7d10f",
+  ]);
+
+const LPColourScale = d3
+  .scaleLinear()
+  .domain([40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90])
+  .range([
+    "#f7e6eb",
+    "#e6ccd3",
+    "#e6c5ce",
+    "#e6b5c3",
+    "#e6a3b6",
+    "#e68ea7",
+    "#e07593",
+    "#e85a82",
+    "#e83f6e",
+    "#e3245a",
+    "#ea0545",
+  ]);
 
 function drawMap(states, election, candidates, width, height) {
   election.forEach((d) => {
@@ -69,7 +135,39 @@ function drawMap(states, election, candidates, width, height) {
     .enter()
     .append("path")
     .attr("d", pathGenerator)
-    .attr("fill", "#90fcad")
+    .attr("fill", (d) => {
+      const state = election.find((e) => e.State === d.properties.NAME_1);
+
+      if (state) {
+        const winner = Object.keys(state).reduce((a, b) =>
+          state[a] > state[b] ? a : b
+        );
+
+        if (!["PDP", "APC", "NNPP", "LP"].includes(winner)) {
+          return "#ccc";
+        }
+
+        const percentage = (
+          (state[winner] /
+            Object.values(state)
+              .splice(1)
+              .reduce((a, b) => a + b)) *
+          100
+        ).toFixed(2);
+
+        if (winner === "PDP") {
+          return PDPColourScale(percentage);
+        } else if (winner === "APC") {
+          return APCColourScale(percentage);
+        } else if (winner === "NNPP") {
+          return NNPPColourScale(percentage);
+        } else if (winner === "LP") {
+          return LPColourScale(percentage);
+        }
+      } else {
+        return "#ccc";
+      }
+    })
     .attr("stroke", "white")
     .attr("stroke-width", 1)
     .attr("pointer-events", "all")
@@ -93,7 +191,7 @@ function drawMap(states, election, candidates, width, height) {
       .style("display", "block")
       .style("padding", "5px").html(`
         <div>
-            <h2>${d.properties.NAME_1}</h2>
+            <h3>${d.properties.NAME_1}</h3>
             <button>X</button>
         </div>
         <table>
