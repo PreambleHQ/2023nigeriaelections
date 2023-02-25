@@ -5,7 +5,9 @@ Promise.all([
   d3.json(
     "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/nigeria-states.json"
   ),
-  d3.csv("data/election.csv"),
+  d3.csv(
+    "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/election.csv"
+  ),
   d3.csv(
     "https://raw.githubusercontent.com/PreambleHQ/2023nigeriaelections/main/data/candidates.csv"
   ),
@@ -19,10 +21,11 @@ Promise.all([
   window.addEventListener("resize", () => {
     width = document.getElementById("chart").getBoundingClientRect().width;
     height = document.getElementById("chart").getBoundingClientRect().height;
+
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       d3.select("svg").remove();
-      drawMap(states, election, width, height);
+      drawMap(states, election, candidates, width, height);
     }, 500);
   });
 });
@@ -110,8 +113,8 @@ function drawMap(states, election, candidates, width, height) {
     .select("#chart")
     .append("svg")
     .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
+    .attr("height", height ? height : 600)
+    .attr("viewBox", [0, 0, width, height ? height : 600])
     .attr("preserveAspectRatio", "xMidYMid meet");
 
   // create a projection
@@ -206,6 +209,7 @@ function drawMap(states, election, candidates, width, height) {
             <tbody>
             ${Object.keys(state)
               .splice(1)
+              .slice(0, 5)
               .map(
                 (key) =>
                   `<tr style='background-color: ${
